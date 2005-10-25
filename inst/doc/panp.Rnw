@@ -1,0 +1,203 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+%\VignetteIndexEntry{gene presence/absence calls}
+%\VignetteDepends{affy}
+%\VignetteKeywords{expression analysis, Affymetrix}
+%\VignettePackage{panp}
+\documentclass[12pt]{article}
+
+\usepackage{hyperref}
+\usepackage[authoryear,round]{natbib}
+
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\begin{document}
+\title{Presence-Absence Calls on AffyMetrix HG-U133 Series Microarrays with panp}
+\author{Peter Warren}
+\maketitle
+\tableofcontents
+
+\section*{Introduction}
+
+This document describes how to use \Rpackage{panp} to perform gene detection (make presence/absence calls) on AffyMetrix HG-U133 series microarray data. Currently, the HG-U133A and HG-U133 Plus 2.0 are supported. \Rpackage{panp} operates on preprocessed microarray expression data as an \Robject{exprSet} object. Any preprocessing method can be used to create the \Robject{exprSet}, such as \Rfunction{rma()}, \Rfunction{mas5()}, \Rfunction{expresso()}, or \Rfunction{gcrma()}. Examples show how to quickly create such an \Robject{exprSet}, then how to use \Rpackage{panp} to generate a set of presence/absence calls and a set of p-values indicating significance of the detection for each expression value.
+
+\section{Background}
+
+Outside of the MAS-P/A method which comes as part of the MAS5.0 software for processing Affymetrix oligonucleotide array data (and is also available as \Rfunction{mas5calls()} in the \Rpackage{affy} package), there is no publicly-available method for establishing presence or absence of genes from microarray data. This means that until now the analyst was required to use MAS5.0 software to establish gene presence or absence. It seemed desirable to decouple the method used to generate gene expression values from the method used to make gene detection calls. We have therefore developed a statistical method in R, called "Presence-Absence calls with Negative Probesets" (PANP) which uses sets of Affymetrix-reported probes with no known hybridization partners. This method uses a simple empirically-derived means to generate p-values used for cutoffs, which can reduce errors that can be introduced by using fitted models. In fact, PANP allows a user to utilize any microarray data pre-processing method to generate expression values, including PM-only methods as well as PM-MM methods. Cutoffs are generated in terms of the data on each chip, so even pre-processing methods that do not normalize across chipsets can be used. 
+
+Many Affymetrix probesets are designed based on EST matches in the public data-bases. Normally, these can provide good target matches to predicted protein-coding genes. However, occasionally ESTs are poorly annotated as to their strand direction. As a result, some probesets have been designed in the reverse complement direction against their own transcripts. That is, these probesets cannot hybridize to the true (intended) EST target, but would hybridize instead to the reverse complement if it was transcribed. We decided to call these Negative Strand Matching Probesets (NSMPs). The initial NSMP lists were derived from Affymetrix chip annotation. We then BLATed these against the NCBI dbEST and removed outliers that showed significant EST hits. The resulting sets became our sets of NSMP negative controls, one set for each chip type. 
+
+The \Rpackage{panp} package consists primarily of one function, \Rfunction{pa.calls()}, which is used to create the set of presence/absence calls and the set of p-values. It calculates a survivor function of the probability density of the NSMP expression values after preprocessing. The user supplies p-value cutoffs (defaults 0.01/0.02) - let these be called tightCutoff and looseCutoff. Then \Rfunction{pa.calls()} interpolates cutoff expression values at those p-values. Finally, it makes gene presence determinations as follows, for interpolated intensities above, below and between the cutoff intensities for p-values as follows:
+\begin{enumerate}
+\item Present (P):  p-values < tightCutoff
+\item Marginal (M): p-values between tightCutoff and looseCutoff
+\item Absent (A):   p-values >= looseCutoff
+\end{enumerate}
+
+
+\section{Preprocessing CEL file data for \Rpackage{panp}}
+\label{sec:create.exprSet}
+This vignette assumes the  \Rpackage{affy} package has been installed, as well as the cdf and probe sequence packages for the chip type you will be using. 
+
+First, the CEL file data must be preprocessed to generate expression values. This is done in two stages: create an AffyBatch object, then process that to generate expression values as an \Robject{exprSet}. In this example, we'll use \Rpackage{gcrma} for the latter, so let's load the required libraries for that and for  \Rpackage{panp} (note that loading these packages will automatically cause to be loaded any other packages they require, such as \Rpackage{affy}):
+
+<<LibraryPreload, echo = TRUE, results = hide>>=
+library(gcrma)
+library(panp)
+@
+
+\subsection{Creating an AffyBatch object from the CEL files}
+
+Make sure the CEL files are in the current working directory, and that R is pointing to that directory. The \Rfunction{ReadAffy()} function reads in the CEL file data and creates an AffyBatch object:
+
+\begin{verbatim}
+> samples <- ReadAffy()	# this reads in all CEL files it finds in the directory
+\end{verbatim}
+
+\subsection{Creating the \Robject{exprSet}}
+
+The \Rfunction{gcrma} function is one way to do this.
+
+\begin{verbatim}
+> gcrma.exprSet <- gcrma(samples)
+> # You might wish to save it:
+> save(gcrma.exprSet, file= "gcrma.exprSet.Rdata")
+\end{verbatim}
+@
+For this example, we have already done the above steps, using \Rpackage{gcrma} to create an \Robject{exprSet} with three samples, which we will now load:
+
+<<load.exprset>>=
+data(gcrma.exprSet)
+@
+
+%\section{Create gene detection calls with \Rpackage{panp}'s \Rfunction{pa.calls()} function}
+\section{Creating gene detection calls with \Rpackage{panp}}
+\label{sec:running.panp}
+
+First, you can run the \Rfunction{pa.calls()} function with no arguments to obtain a summary of usage information:
+
+<<usage.info, echo=TRUE>>=
+pa.calls()
+@
+
+Now, let's run it on our \Robject{exprSet}. We'll use the default p-value cutoffs of 0.01 and 0.02. So in this case, intensities above the intensity at the 0.01 cutoff will be called "P" (present); intensities between the two cutoffs will be assigned an "M" (marginal), and those below the intensity at the 0.02 p-value will get an "A"(absent).
+
+<<run.pa.calls>>=
+PAset <- pa.calls(gcrma.exprSet)
+@
+The screen output tells you what the intensity values are at each of the two cutoff p-values, for each of the three chips in our \Robject{exprSet}. (Be aware that some preprocessing methods, such as \Rfunction{rma} and \Rfunction{gcrma}, return the expression values in log(2) form. Others return untransformed expression values. \Rfunction{pa.calls()} works equally well in either case.) The final output line informs the user that if any warning messages about 'Collapsing to unique values' appear, they are benign (there are none in this example). The collapsing sometimes occurs when \Rfunction{pa.calls()} interpolates over a large data set, and is expected.
+
+\section{Extracting P/M/A calls and p-values}
+
+The presence/absence calls and p-values are embedded in the \Robject{exprs} and \Robject{se.exprs} slots of the returned \Robject{exprSet} (here, "PAset"), respectively. These two slots can now be extracted for further use in the R environment. They can also be saved as comma-separated files, in case it is desired to view them in Excel, for instance. (You can, of course, also save these as Rdata files for later use in the R environment.)
+
+<<extract.PAcalls>>=
+PAcalls <- exprs(PAset)
+Pvalues <- se.exprs(PAset)
+
+write.table(PAcalls, file="PAcalls_gcrma.csv", sep=",", col.names=NA)
+write.table(Pvalues, file="Pvalues_gcrma.csv", sep=",", col.names=NA)
+@
+A look at the first few P/A calls and p-values for the first chip shows some results:
+
+<<show.some.output>>=
+head(PAcalls[,1])
+
+head(Pvalues[,1])
+@
+Finally, we can extract lists of probeset IDs that were called Present, Marginal and Absent. This must be done one sample at a time; here, we extract the lists for the first chip:
+
+<<extract.names>>=
+P_list_1 <-rownames(PAcalls)[PAcalls[,1]=="P"]
+M_list_1 <-rownames(PAcalls)[PAcalls[,1]=="M"]
+A_list_1 <-rownames(PAcalls)[PAcalls[,1]=="A"]
+@
+
+\section{Illustrating \Rpackage{panp}'s decisions}
+
+Figure 1 illustrates how the \Rfunction{pa.calls()} function derives its P/A calls. The intensities of the NSMPs versus those of all probesets on the chip (first chip of the three) are shown. The survivor curve (1-CDF) is included, along with lines showing where the default p-value cutoffs land on that curve. This illustrates how the p-value cutoffs are interpolated into intensity cutoffs, using the survivor function. Transcripts whose intensities are above the right-most cutoff line are called present; those between the two lines are called marginal; and those below the left-most line are called absent. 
+
+\begin{figure}[htbp]
+ \begin{center}
+<<fig=TRUE, echo=FALSE>>=
+data(NSMPnames.hgu133a)	# read in the NSMP names list
+# create x and y ranges for NSMP intensities
+NSMP_x <- sort(exprs(gcrma.exprSet)[NSMPnames.hgu133a,1], decreasing=TRUE)
+NSMP_y <- seq(0,1,1/(length(NSMP_x)-1))
+
+# Plot expression densities of all probesets, then just NSMPs
+plot(density(exprs(gcrma.exprSet)[,1]),
+	col="blue",
+	xlim = c(1,13),
+	ylim = c(0,.8),
+	main = "Expression density: NSMPs vs. all, and NSMP survivor curve",
+	xlab = "Log2(Intensity)",
+	ylab = "Probability density")
+lines(density(NSMP_x), col=6)
+
+# interpolate over the NSMP exprs to draw survivor function
+interp <- approxfun(NSMP_x, NSMP_y, yleft=1, yright=0) 
+x = NSMP_x
+curve(interp(x),add=TRUE, lwd=2)	# …and add it to the plot
+
+# reverse interpolate to get intensity values at p-value cutoffs
+revInterp <- approxfun(NSMP_y, NSMP_x, yleft=1, yright=0)
+rev01=revInterp(0.01)
+rev02=revInterp(0.02)
+# Pinpoint the x-y locations
+# points(rev01, .01, pch=21, cex=2, lwd=2,col=1)
+# points(rev02, .02, pch=21, cex=2, lwd=2,col=1)
+
+# Draw horiz. lines & labels for both Pval cutoffs: tightCutoff, looseCutoff:
+abline(h = 0.01, col = 1, lty = 2)
+abline(h = 0.02, col = 1, lty = 2)
+text(2.4, 0.01, pos=3, offset=0.1, cex=.7, as.character(0.01))
+text(1.7, 0.02, pos=3, offset=0.1, cex=.7, as.character(0.02))
+
+# vertical lines & labels for interpolated intensities at cutoffs
+revTight=revInterp(0.01)
+revLoose=revInterp(0.02)
+abline(v = revTight, col = 1, lty = 2)
+abline(v = revLoose, col = 1, lty = 2)
+text(revLoose, .35, pos=2, offset=0.1, cex=.7, format.pval(revLoose,digits=3))
+text(revTight, .30, pos=2, offset=0.1, cex=.7, format.pval(revTight,digits=3))
+text(revLoose, .35, pos=4, cex=.8, "Log(intensity)")
+text(revTight, .30, pos=4, cex=.8, "Log(intensity)")
+
+lines(density(exprs(gcrma.exprSet)[,1][PAcalls[,1]=="P"], bw=.1, n=512),col=2, lty=2, lwd=1)
+lines(density(exprs(gcrma.exprSet)[,1][PAcalls[,1]=="A"], bw=.1, n=512),col=3, lty=2, lwd=1)
+
+legend(7.5,.8, c("NSMP exprs, survivor fcn.","NSMP exprs, density","All probesets, density","'Present' probesets, density","'Absent' probesets, density"),
+col = c(1,6,4,2,3), lty=c(1,1,1,2,2), lwd=c(2,1,1,1,1), cex=.75,
+ 	text.col= "darkgreen",
+ 	bg='gray90')
+
+@
+    \caption{Probability densities of intensities for NSMPs and all probesets for sample number 1. NSMP survivor function (1-CDF) is in black. Dashed curves indicate densities for probesets called "Present" and "Absent" by \Rpackage{panp}. Horizontal lines indicate p-value cutoffs of 0.01 and 0.02, while vertical lines show how these are interpolated on the NSMP survivor curve to get expression cutoff values.}
+  \end{center}
+\end{figure}
+
+\newpage
+
+\section{References}
+Warren, P., Bienkowska, J., Martini, P., Jackson, J., and Taylor, D., PANP - a New Method %
+of Gene Detection on Oligonucleotide Expression Arrays (2005), under review
+
+
+\end{document}
+
+
