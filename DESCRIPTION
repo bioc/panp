@@ -13,4 +13,5 @@ Description: A function to make gene presence/absence calls based
 Maintainer: Peter Warren <peter.warren@verizon.net>
 Depends: affy
 License: GPL version 2 or newer
+biocViews: Microarray, OneChannel, Transcription
 
