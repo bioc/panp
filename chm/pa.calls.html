@@ -1,4 +1,5 @@
 <html><head><title>Presence-Absence Calls from Negative Strand Matching Probesets</title>
+<meta http-equiv="Content-Type" content="text/html; charset=">
 <link rel="stylesheet" type="text/css" href="Rchm.css">
 </head>
 <body>
@@ -31,7 +32,7 @@ pa.calls(object, looseCutoff = 0.02, tightCutoff = 0.01, verbose = FALSE)
 <table summary="R argblock">
 <tr valign="top"><td><code>object</code></td>
 <td>
-an exprSet object (result of running expression-generating function, like expresso(), rma(), mas5(), etc.) Currently, this must be of chip type HGU133A or HGU133 Plus 2.0</td></tr>
+an ExpressionSet object (result of running expression-generating function, like expresso(), rma(), mas5(), etc.) Currently, this must be of chip type HGU133A or HGU133 Plus 2.0</td></tr>
 <tr valign="top"><td><code>looseCutoff</code></td>
 <td>
 the larger P-value cutoff (see details)</td></tr>
@@ -46,11 +47,11 @@ logical. If 'TRUE' detailed progress messages are reported.</td></tr>
 <h3>Details</h3>
 
 <p>
-The function calculates a matrix of P-values for the expression values in the input exprSet. P-values are calculated based on the empirical survivor function (1-CDF) of the set of negative probesets identified by Affymetrix as negative strand matching probesets (NSMP) with no cross hybridization. These probesets are therefore assumed to show nothing but background/machine noise plus some occasional non-specific binding. The P-value returned for any probeset expression value in exprSet is the value of the NSMP survivor function for that expression level. 
+The function calculates a matrix of P-values for the expression values in the input ExpressionSet. P-values are calculated based on the empirical survivor function (1-CDF) of the set of negative probesets identified by Affymetrix as negative strand matching probesets (NSMP) with no cross hybridization. These probesets are therefore assumed to show nothing but background/machine noise plus some occasional non-specific binding. The P-value returned for any probeset expression value in ExpressionSet is the value of the NSMP survivor function for that expression level. 
 </p>
 <p>
 Presence/Absence calls are derived by applying the two cutoff values to
-the matrix of P-values for all genes in the exprSet, as follows:
+the matrix of P-values for all genes in the ExpressionSet, as follows:
 <li>Present ('P'):    P-values &lt;= tightCutoff
 <li>Absent ('A'):     P-values &gt; looseCutoff
 <li>Marginal ('M'):   P-values between tightCutoff and looseCutoff
@@ -60,16 +61,16 @@ the matrix of P-values for all genes in the exprSet, as follows:
 <h3>Value</h3>
 
 <table summary="R argblock">
-<tr valign="top"><td><code>exprSet</code></td>
+<tr valign="top"><td><code>list</code></td>
 <td>
-a new exprSet: exprs slot holds Pcalls; se.exprs slot holds Pvals, as follows:</td></tr>
+a new list containing two matrices: Pcalls and Pvals, as follows:</td></tr>
+<tr valign="top"><td><code>Pcalls </code></td>
+<td>
+a matrix of Presence (P), Marginal (M), Absent (A) indicators</td></tr>
 <tr valign="top"><td><code>Pvals </code></td>
 <td>
 a matrix of P-values. Each data point is the P-value for the expr 
 at the same x,y coordinates. </td></tr>
-<tr valign="top"><td><code>Pcalls </code></td>
-<td>
-a matrix of Presence (P), Marginal (M), Absent (A) indicators</td></tr>
 </table>
 
 <h3>Note</h3>
@@ -89,26 +90,26 @@ Peter Warren
 <h3>References</h3>
 
 <p>
-Warren, P., Bienkowska, J., Martini, P., Jackson, J., and Taylor, D., PANP - a New Method of Gene Detection on Oligonucleotide Expression Arrays (2005), in preparation
+Warren, P., Bienkowska, J., Martini, P., Jackson, J., and Taylor, D., PANP - a New Method of Gene Detection on Oligonucleotide Expression Arrays (2007), in preparation
 </p>
 
 
 <h3>Examples</h3>
 
 <pre>
-## Load example exprSet 
-data(test133a)
+## Load example ExpressionSet 
+data(gcrma.ExpressionSet)
 
-## Generate Pvals and Pcalls matrices from exprSet, using default cutoffs
-newExprSet &lt;- pa.calls(test133a)
+## Generate Pvals and Pcalls matrices from ExpressionSet, using default cutoffs
+PA &lt;- pa.calls(gcrma.ExpressionSet)
 
 ## to access the Pcalls and Pvals:
-myPcalls &lt;- exprs(newExprSet)
-myPvals &lt;- se.exprs(newExprSet)
+myPcalls &lt;- PA$Pcalls
+myPvals &lt;-  PA$Pvals
 </pre>
 
 
 
-<hr><div align="center">[Package <em>panp</em> version 1.0.0 <a href="00Index.html">Index]</a></div>
+<hr><div align="center">[Package <em>panp</em> version 1.7.1 <a href="00Index.html">Index]</a></div>
 
 </body></html>

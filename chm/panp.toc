@@ -10,8 +10,8 @@
 </OBJECT>
 <UL>
 <LI> <OBJECT type="text/sitemap">
-<param name="Name" value="gcrma.exprSet">
-<param name="Local" value="gcrma.exprSet.html">
+<param name="Name" value="gcrma.ExpressionSet">
+<param name="Local" value="gcrma.ExpressionSet.html">
 </OBJECT>
 <LI> <OBJECT type="text/sitemap">
 <param name="Name" value="NSMPnames.hgu133a">
@@ -25,18 +25,14 @@
 <param name="Name" value="pa.calls">
 <param name="Local" value="pa.calls.html">
 </OBJECT>
-<LI> <OBJECT type="text/sitemap">
-<param name="Name" value="test133a">
-<param name="Local" value="test133a.html">
-</OBJECT>
 </UL>
 <LI> <OBJECT type="text/sitemap">
 <param name="Name" value="Package panp:  Titles">
 </OBJECT>
 <UL>
 <LI> <OBJECT type="text/sitemap">
-<param name="Name" value="ExprSet resulting from gcrma processing of 3 HG-U133A chips">
-<param name="Local" value="gcrma.exprSet.html">
+<param name="Name" value="ExpressionSet resulting from gcrma processing of 3 HG-U133A chips">
+<param name="Local" value="gcrma.ExpressionSet.html">
 </OBJECT>
 <LI> <OBJECT type="text/sitemap">
 <param name="Name" value="Negative Strand Matching Probeset (NSMP) names for HG-U133 Plus 2.0 chip type">
@@ -49,10 +45,6 @@
 <LI> <OBJECT type="text/sitemap">
 <param name="Name" value="Presence-Absence Calls from Negative Strand Matching Probesets">
 <param name="Local" value="pa.calls.html">
-</OBJECT>
-<LI> <OBJECT type="text/sitemap">
-<param name="Name" value="Test HG-U133A exprSet for pa.calls">
-<param name="Local" value="test133a.html">
 </OBJECT>
 </UL>
 </UL>
