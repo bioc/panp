@@ -1,5 +1,5 @@
 Package: panp
-Version: 1.6.0
+Version: 1.7.1
 Date: 2005-10-17
 Title: Presence-Absence Calls from Negative Strand Matching Probesets
 Author: Peter Warren
@@ -11,7 +11,7 @@ Description: A function to make gene presence/absence calls based
 	PM-only methods like RMA. NSMP sets have been established for 
 	the HGU133A and HGU133-Plus-2.0 chipsets to date. 
 Maintainer: Peter Warren <peter.warren@verizon.net>
-Depends: affy
+Depends: affy (>= 1.14.0), R (>= 2.5.0), Biobase (>= 1.14.0)
 License: GPL version 2 or newer
 biocViews: Microarray, OneChannel, Transcription
 

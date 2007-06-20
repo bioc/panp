@@ -1,4 +1,4 @@
-"pa.calls" <-
+`pa.calls` <-
 function(object=NULL, looseCutoff=0.02, tightCutoff=0.01, verbose=FALSE) {
 
 # Print intro
@@ -6,14 +6,14 @@ if (is.null(object)) {
     cat("\nUSAGE:
 \tpa.calls(object, looseCutoff=0.02, tightCutoff=0.01, verbose = FALSE)\n
 INPUTS: 
-\tobject - exprSet; e.g., returned from expression-generating function, 
-\t   such as expresso(), rma(), mas5(), etc. 
+\tobject - ExpressionSet, returned from expression-generating function, 
+\t   such as expresso(), rma(), mas5(), gcrma(), etc. 
 \tlooseCutoff - the larger P-value cutoff
 \ttightCutoff - the smaller, more strict P-value cutoff
 \tverbose - TRUE or FALSE\n
 OUTPUTS: 
-\tReturns a new exprSet, with exprs = Pcalls, se.exprs = Pvals:
-\tPvals - a matrix of P-values of same dimensions as exprs(exprSet). Each
+\tReturns a list of two matrices, Pcalls and Pvals:
+\tPvals - a matrix of P-values of same dimensions as exprs(input object). Each
 \t   datapoint is the P-value for the probeset at the same x,y coordinates. 
 \tPcalls - a matrix of Presence (P), Marginal (M), Absent (A) indicators\n\n")
 return()
@@ -32,15 +32,17 @@ if(verbose){
    cat("tightCutoff is ",tightCutoff,"\nlooseCutoff is ",looseCutoff,"\n")
 }
 # check inputs for correct type and range
-if (class(object)[1]!="exprSet") {
-stop("\nAborting: object must be an exprSet\n\n")
+if (class(object)[1]=="exprSet") {
+	 .Deprecated(msg=Biobase:::EXPRSET_DEPR_MSG)
+} else if (class(object)[1]!="ExpressionSet") {
+	stop("\nAborting: object must be an ExpressionSet or exprSet (deprecated)\n\n")
 }
-# exprSet type MUST be only hgu133a or hgu133plus2; no other chipset
+# chip type MUST be only hgu133a or hgu133plus2; no other chipset
 # is currently supported
 chip = annotation(object)
 if (chip == "hgu133b"){
 stop("\nHG-U133B is not currently supported. Supported chip types are\n
-HG-U133A and HG-U133 Plus 2.0\n\n")
+HG-U133A and HG-U133 Plus 2.0\n\n") 
 }
 if ((chip != "hgu133a")&(chip != "hgu133atag")&(chip != "hgu133plus2")){
  stop("\nAborting: chip type must be either HG-U133A or HG-U133 Plus 2.0 \n\n")
@@ -54,9 +56,9 @@ if (tightCutoff > looseCutoff){
  stop("\nAborting: tightCutoff must be lower than looseCutoff\n\n")
 }
 if(verbose){
-  cat("Outputs will be exprSet containing two matrices of same dimensions as input full dataset:
-  1. se.exprs = Pvals - a matrix of P-values 
-  2. exprs = Pcalls - a matrix of P/A/M indicators: 
+  cat("Outputs will be a list containing two matrices of same dimensions as input full dataset:
+  1. Pcalls - a matrix of P/A/M indicators: 
+  2. Pvals - a matrix of P-values 
   'P': P-values <= tightCutoff ",tightCutoff,"
   'A': P-values > looseCutoff ",looseCutoff,"
   'M': P-values between ", tightCutoff, " and ", looseCutoff,"\n")
@@ -88,7 +90,7 @@ cutoff_fcn <- function(x){
 else return("M")
 }
 
-# set up loop to do each chip in exprSet separately
+# set up loop to do each chip in exprs(object) separately
 len <- length(colnames(AllExprs))
 cat("\nProcessing",len, "chips: ")
 flush.console()
@@ -114,13 +116,9 @@ Pvals <- as.matrix(Pvals)
 Pcalls <- as.matrix(Pcalls)
 colnames(Pvals) <- colnames(AllExprs)
 colnames(Pcalls) <- colnames(AllExprs)
-eset <- new("exprSet",
-              exprs = Pcalls,
-              se.exprs = Pvals,
-              phenoData = phenoData(object),
-              description = description(object),
-              annotation = annotation(object),
-              notes = c(notes(object)))
+
+## output type is now list; changed from deprecated exprSet:
+outlist <- list(Pcalls=Pcalls, Pvals=Pvals)
 cat("\nProcessing complete.\n\n")
 flush.console()
 
@@ -150,6 +148,6 @@ cat(colnames(AllExprs)[i], "\t", format.pval(revLoose,digits=3), "\t\t", format.
 }
 cat("\n")
 cat("[NOTE: 'Collapsing to unique x values...' warning messages are benign.]\n\n")
-return(eset)  # Pcalls are in eset$exprs slot ; Pvals are in eset$se.exprs slot
+return(outlist)  # Pcalls and Pvals
 }
 
