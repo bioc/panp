@@ -32,10 +32,8 @@ if(verbose){
    cat("tightCutoff is ",tightCutoff,"\nlooseCutoff is ",looseCutoff,"\n")
 }
 # check inputs for correct type and range
-if (class(object)[1]=="exprSet") {
-	 .Deprecated(msg=Biobase:::EXPRSET_DEPR_MSG)
-} else if (class(object)[1]!="ExpressionSet") {
-	stop("\nAborting: object must be an ExpressionSet or exprSet (deprecated)\n\n")
+if (!is(object,"ExpressionSet")) {
+	stop("\nAborting: object must be an ExpressionSet\n\n")
 }
 # chip type MUST be only hgu133a or hgu133plus2; no other chipset
 # is currently supported
@@ -117,7 +115,7 @@ Pcalls <- as.matrix(Pcalls)
 colnames(Pvals) <- colnames(AllExprs)
 colnames(Pcalls) <- colnames(AllExprs)
 
-## output type is now list; changed from deprecated exprSet:
+## create output list
 outlist <- list(Pcalls=Pcalls, Pvals=Pvals)
 cat("\nProcessing complete.\n\n")
 flush.console()
