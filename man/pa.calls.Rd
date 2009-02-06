@@ -17,9 +17,11 @@ pa.calls(object, looseCutoff = 0.02, tightCutoff = 0.01, verbose = FALSE)
 
 Presence/Absence calls are derived by applying the two cutoff values to
 the matrix of P-values for all genes in the ExpressionSet, as follows:
-\item Present ('P'):	P-values <= tightCutoff
-\item Absent ('A'):	P-values > looseCutoff
-\item Marginal ('M'):	P-values between tightCutoff and looseCutoff	
+  \describe{
+    \item Present ('P'):	P-values <= tightCutoff
+    \item Absent ('A'):	P-values > looseCutoff
+    \item Marginal ('M'):	P-values between tightCutoff and looseCutoff 
+  }
 }
 \value{
   \item{list}{a new list containing two matrices: Pcalls and Pvals, as follows:}
