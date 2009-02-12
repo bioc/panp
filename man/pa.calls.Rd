@@ -18,16 +18,16 @@ pa.calls(object, looseCutoff = 0.02, tightCutoff = 0.01, verbose = FALSE)
 Presence/Absence calls are derived by applying the two cutoff values to
 the matrix of P-values for all genes in the ExpressionSet, as follows:
   \describe{
-    \item Present ('P'):	P-values <= tightCutoff
-    \item Absent ('A'):	P-values > looseCutoff
-    \item Marginal ('M'):	P-values between tightCutoff and looseCutoff 
+    \item{Present ('P')}{P-values <= tightCutoff}
+    \item{Absent ('A')}{P-values > looseCutoff}
+    \item{Marginal ('M')}{P-values between tightCutoff and looseCutoff}
   }
 }
 \value{
   \item{list}{a new list containing two matrices: Pcalls and Pvals, as follows:}
   \item{Pcalls }{a matrix of Presence (P), Marginal (M), Absent (A) indicators}
   \item{Pvals }{a matrix of P-values. Each data point is the P-value for the expr 
-at the same x,y coordinates. }
+at the same x, y coordinates. }
 }
 \note{NSMP sets have been established for the HGU133A and HGU133-Plus-2.0 chipsets to date. Hence only these two are currently supported by PANP.}
 \references{Warren, P., Bienkowska, J., Martini, P., Jackson, J., and Taylor, D., PANP - a New Method of Gene Detection on Oligonucleotide Expression Arrays (2007), in preparation}
