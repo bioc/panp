@@ -1,0 +1,6 @@
+import(methods)
+importMethodsFrom(Biobase, annotation, exprs)
+importFrom(stats, approxfun)
+importFrom(utils, data, flush.console)
+
+export(pa.calls)

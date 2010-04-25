@@ -11,4 +11,5 @@ Description: A function to make gene presence/absence calls based
 	the HGU133A and HGU133-Plus-2.0 chipsets to date. 
 Maintainer: Peter Warren <peter.warren@verizon.net>
 Depends: R (>= 2.5.0), affy (>= 1.23.4), Biobase (>= 2.5.5)
+Imports: Biobase, methods, stats, utils
 License: GPL (>= 2)
