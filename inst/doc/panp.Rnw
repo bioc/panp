@@ -152,7 +152,7 @@ lines(density(NSMP_x), col=6)
 # interpolate over the NSMP exprs to draw survivor function
 interp <- approxfun(NSMP_x, NSMP_y, yleft=1, yright=0) 
 x = NSMP_x
-curve(interp(x),add=TRUE, lwd=2)	# …and add it to the plot
+curve(interp(x),add=TRUE, lwd=2)	 #add it to the plot
 
 # reverse interpolate to get intensity values at p-value cutoffs
 revInterp <- approxfun(NSMP_y, NSMP_x, yleft=1, yright=0)
