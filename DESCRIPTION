@@ -1,5 +1,5 @@
 Package: panp
-Version: 1.24.0
+Version: 1.25.0
 Title: Presence-Absence Calls from Negative Strand Matching Probesets
 Author: Peter Warren
 Description: A function to make gene presence/absence calls based 
